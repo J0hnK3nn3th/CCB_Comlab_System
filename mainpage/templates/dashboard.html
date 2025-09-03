@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Computer Units Management</title>
+    {% load static %}
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="icon" type="image/png" href="{% static 'img/icon.png' %}">
+    
+    <!-- Removed Chart.js since chart is no longer needed -->
+
+    <link href="{% static 'dashboard.css' %}" rel="stylesheet">
+    <link href="{% static 'sidebar.css' %}" rel="stylesheet">
+    <link href="{% static 'header.css' %}" rel="stylesheet">
+    
+    
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            {% include 'structure/sidebar.html' %}
+            
+            <!-- Main Content -->
+            <div class="col-md-9 col-lg-10 px-0">
+                <div class="main-content">
+                    <!-- Header -->
+                    {% include 'structure/header.html' %}
+                    
+                    <!-- Dashboard Content -->
+                    <div class="container-fluid">
+                        <!-- KPI Cards Row -->
+                        <div class="row mb-4">
+                            <div class="d-flex flex-nowrap overflow-auto">
+                                <div class="col-auto mb-4 me-3">
+                                    <div class="card kpi-card">
+                                        <div class="card-body">
+                                            <div class="d-flex align-items-center mb-2">
+                                                <div class="kpi-value me-2">{{ total_users }}</div>
+                                                <div class="kpi-icon green">
+                                                    <i class="bi bi-people"></i>
+                                                </div>
+                                            </div>
+                                            <div class="kpi-label">Total Computer Users</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-auto mb-4 me-3">
+                                    <div class="card kpi-card">
+                                        <div class="card-body">
+                                            <div class="d-flex align-items-center mb-2">
+                                                <div class="kpi-value me-2">{{ total_units }}</div>
+                                                <div class="kpi-icon green">
+                                                    <i class="bi bi-display"></i>
+                                                </div>
+                                            </div>
+                                            <div class="kpi-label">Total Computer Units</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-auto mb-4 me-3">
+                                    <div class="card kpi-card">
+                                        <div class="card-body">
+                                            <div class="d-flex align-items-center mb-2">
+                                                <div class="kpi-value me-2">{{ available_units }}</div>
+                                                <div class="kpi-icon green">
+                                                    <i class="bi bi-check-circle"></i>
+                                                </div>
+                                            </div>
+                                            <div class="kpi-label">Available Computer Units</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-auto mb-4 me-3">
+                                    <div class="card kpi-card">
+                                        <div class="card-body">
+                                            <div class="d-flex align-items-center mb-2">
+                                                <div class="kpi-value me-2">{{ occupied_units }}</div>
+                                                <div class="kpi-icon green">
+                                                    <i class="bi bi-x-circle"></i>
+                                                </div>
+                                            </div>
+                                            <div class="kpi-label">Occupied Computer Units</div>
+                                        </div>
+                                    </div>
+                                </div>
+                               
+                                <div class="col-auto mb-4 me-3">
+                                    <div class="card kpi-card">
+                                        <div class="card-body">
+                                            <div class="d-flex align-items-center mb-2">
+                                                <div class="kpi-value me-2">{{ maintenance_units }}</div>
+                                                <div class="kpi-icon green">
+                                                    <i class="bi bi-tools"></i>
+                                                </div>
+                                            </div>
+                                            <div class="kpi-label">Under Maintenance Units</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Charts and Promo Row -->
+                        <div class="row mb-4">
+                            <!-- Removed Computer Users Overview chart and Get started with CCB promo card -->
+                        </div>
+                        
+                        <!-- Data Lists Row -->
+                        <div class="row">
+                            <div class="col-xl-4 col-lg-4 mb-4">
+                                <div class="card data-list-card">
+                                    <div class="card-body">
+                                        <h5 class="card-title mb-3">List of Available Computers</h5>
+                                        
+                                        {% if available_units_list %}
+                                            {% for unit in available_units_list %}
+                                                <div class="category-item">
+                                                    <div class="category-info">
+                                                        <div class="category-icon green">
+                                                            <i class="bi bi-pc-display"></i>
+                                                        </div>
+                                                        <div>
+                                                            <h6 class="mb-1">{{ unit.unit_id }}</h6>
+                                                            <small class="text-muted">Status: {{ unit.get_status_display }}</small>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            {% endfor %}
+                                        {% else %}
+                                            <p class="text-muted mb-0">No available computers at the moment.</p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-xl-4 col-lg-4 mb-4">
+                                <div class="card data-list-card">
+                                    <div class="card-body">
+                                        <h5 class="card-title mb-3">List of Occupied Computers</h5>
+                                        
+                                        {% if occupied_units_list %}
+                                            {% for unit in occupied_units_list %}
+                                                <div class="category-item">
+                                                    <div class="category-info">
+                                                        <div class="category-icon green">
+                                                            <i class="bi bi-pc-display"></i>
+                                                        </div>
+                                                        <div>
+                                                            <h6 class="mb-1">{{ unit.unit_id }}</h6>
+                                                            <small class="text-muted">Status: {{ unit.get_status_display }}</small>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            {% endfor %}
+                                        {% else %}
+                                            <p class="text-muted mb-0">No occupied units at the moment.</p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-xl-4 col-lg-4 mb-4">
+                                <div class="card data-list-card">
+                                    <div class="card-body">
+                                        <h5 class="card-title mb-3">List of Under Maintenance Units</h5>
+                                        
+                                        {% if maintenance_units_list %}
+                                            {% for unit in maintenance_units_list %}
+                                                <div class="category-item">
+                                                    <div class="category-info">
+                                                        <div class="category-icon orange">
+                                                            <i class="bi bi-tools"></i>
+                                                        </div>
+                                                        <div>
+                                                            <h6 class="mb-1">{{ unit.unit_id }}</h6>
+                                                            <small class="text-muted">Status: {{ unit.get_status_display }}</small>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            {% endfor %}
+                                        {% else %}
+                                            <p class="text-muted mb-0">No units under maintenance.</p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Django Messages Display -->
+    {% if messages %}
+    <div class="messages-container d-none">
+        {% for message in messages %}
+        <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %}" data-message="{{ message }}">
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Show Django messages via SweetAlert
+            document.querySelectorAll('.messages-container .alert').forEach(function(alert) {
+                const message = alert.getAttribute('data-message');
+                if (alert.classList.contains('alert-danger') || alert.classList.contains('alert-error')) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: message,
+                        confirmButtonText: 'OK'
+                    });
+                } else if (alert.classList.contains('alert-success')) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success',
+                        text: message,
+                        confirmButtonText: 'OK'
+                    });
+                } else if (alert.classList.contains('alert-warning')) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Warning',
+                        text: message,
+                        confirmButtonText: 'OK'
+                    });
+                } else if (alert.classList.contains('alert-info')) {
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'Information',
+                        text: message,
+                        confirmButtonText: 'OK'
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'Notice',
+                        text: message,
+                        confirmButtonText: 'OK'
+                    });
+                }
+            });
+
+            // Add hover effects to KPI cards
+            const kpiCards = document.querySelectorAll('.kpi-card');
+            kpiCards.forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-5px)';
+                    this.style.boxShadow = '0 0.5rem 1rem rgba(0, 0, 0, 0.15)';
+                });
+                
+                card.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0)';
+                    this.style.boxShadow = '0 0.125rem 0.25rem rgba(0, 0, 0, 0.075)';
+                });
+            });
+            
+            // Add click functionality to sidebar navigation
+            const navLinks = document.querySelectorAll('.sidebar-nav .nav-link');
+            navLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    console.log('Sidebar link clicked:', this.getAttribute('href'), this.textContent.trim());
+                    
+                    // Only prevent default for links without href or with href="#"
+                    if (!this.getAttribute('href') || this.getAttribute('href') === '#') {
+                        e.preventDefault();
+                        console.log('Prevented default for link without href');
+                    } else {
+                        console.log('Allowing navigation to:', this.getAttribute('href'));
+                    }
+                    
+                    // Remove active class from all links
+                    navLinks.forEach(l => l.classList.remove('active'));
+                    
+                    // Add active class to clicked link
+                    this.classList.add('active');
+                });
+            });
+            
+            // Add search functionality
+            const searchBox = document.querySelector('.search-box');
+            searchBox.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                console.log('Searching for:', searchTerm);
+                // Add your search logic here
+            });
+            
+            // Add play button functionality
+            const playButton = document.querySelector('.play-button');
+            if (playButton) {
+                playButton.addEventListener('click', function() {
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'Video Player',
+                        text: 'Video player would open here!',
+                        confirmButtonText: 'OK'
+                    });
+                });
+            }
+        });
+    </script>
+</body>
+</html>

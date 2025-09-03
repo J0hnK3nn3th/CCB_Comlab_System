@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Activity Logs - Computer Lab System</title>
+    {% load static %}
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="icon" type="image/png" href="{% static 'img/icon.png' %}">
+
+    <link href="{% static 'dashboard.css' %}" rel="stylesheet">
+    <link href="{% static 'sidebar.css' %}" rel="stylesheet">
+    <link href="{% static 'header.css' %}" rel="stylesheet">
+    <link href="{% static 'logss.css' %}" rel="stylesheet">
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            {% include 'structure/sidebar.html' %}
+            
+            <!-- Main Content -->
+            <div class="col-md-9 col-lg-10 px-0">
+                <div class="main-content">
+                    <!-- Header -->
+                    {% include 'structure/header.html' %}
+                    
+                    <!-- Logs Content -->
+                    <div class="container-fluid py-4">
+                        <!-- Page Header -->
+                        <div class="page-header">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h1 class="page-title">
+                                        <i class="bi bi-journal-text me-2"></i>
+                                        Activity Logs
+                                    </h1>
+                                    <p class="page-subtitle">Monitor user activities and system access logss</p>
+                                   
+                                </div>
+                                <div class="header-actions">
+                                    <button class="btn btn-outline-primary me-2" id="exportLogs">
+                                        <i class="bi bi-download me-2"></i>
+                                        Export Logs
+                                    </button>
+                                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#filterModal">
+                                        <i class="bi bi-funnel me-2"></i>
+                                        Filter
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+
+                        <!-- Filters Bar -->
+                        <div class="filters-bar mb-4">
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <div class="input-group">
+                                        <span class="input-group-text">
+                                            <i class="bi bi-search"></i>
+                                        </span>
+                                        <input type="text" class="form-control" id="searchLogs" placeholder="Search by name, student ID, or station...">
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <select class="form-select" id="actionFilter">
+                                        <option value="">All Actions</option>
+                                        <option value="sign-in">Sign In</option>
+                                        <option value="sign-out">Sign Out</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <select class="form-select" id="stationFilter">
+                                        <option value="">All Stations</option>
+                                        {% for log in all_logs %}
+                                            {% if log.computer_station %}
+                                                <option value="{{ log.computer_station }}">{{ log.computer_station }}</option>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-2">
+                                    <button class="btn btn-outline-secondary w-100" id="clearFilters">
+                                        <i class="bi bi-x-circle me-1"></i>
+                                        Clear
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Logs Table -->
+                        <div class="card logs-table-card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h5 class="card-title mb-0">
+                                    <i class="bi bi-table me-2"></i>
+                                    Recent Activity Logs
+                                </h5>
+                                <div class="table-info">
+                                    <span class="text-muted">Showing {{ logs.start_index }}-{{ logs.end_index }} of {{ logs.paginator.count }} logs</span>
+                                </div>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="table-responsive">
+                                    <table class="table table-hover mb-0" id="logsTable">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th scope="col" class="text-center col-number">
+                                                    <i class="bi bi-hash"></i>
+                                                </th>
+                                                <th scope="col" class="col-timestamp">
+                                                    <i class="bi bi-clock me-1"></i>Timestamp
+                                                </th>
+                                                <th scope="col" class="col-student-id">
+                                                    <i class="bi bi-person me-1"></i>Student ID
+                                                </th>
+                                                <th scope="col" class="col-full-name">
+                                                    <i class="bi bi-person-badge me-1"></i>Full Name
+                                                </th>
+                                                <th scope="col" class="col-action">
+                                                    <i class="bi bi-arrow-left-right me-1"></i>Action
+                                                </th>
+                                                <th scope="col" class="col-station">
+                                                    <i class="bi bi-pc-display me-1"></i>Station
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% if logs %}
+                                                {% for log in logs %}
+                                                <tr class="log-row" data-action="{{ log.action }}" data-station="{{ log.computer_station|default:'' }}">
+                                                    <td class="text-center text-muted">{{ forloop.counter }}</td>
+                                                    <td>
+                                                        <div class="timestamp-info">
+                                                            <div class="timestamp-main">{{ log.timestamp|date:"M d, Y" }}</div>
+                                                            <div class="timestamp-sub">{{ log.timestamp|date:"H:i:s" }}</div>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <span class="student-id">{{ log.student_id|default:log.user.student_id|default:"N/A" }}</span>
+                                                    </td>
+                                                    <td>
+                                                        <div class="user-info">
+                                                            <div class="user-name">{{ log.full_name|default:log.user.full_name|default:"Unknown User" }}</div>
+                                                            {% if log.user %}
+                                                                <div class="user-course text-muted small">{{ log.user.course }}</div>
+                                                            {% endif %}
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        {% if log.action == 'sign-in' %}
+                                                            <span class="badge bg-success">
+                                                                <i class="bi bi-box-arrow-in-right me-1"></i>Sign In
+                                                            </span>
+                                                        {% elif log.action == 'sign-out' %}
+                                                            <span class="badge bg-warning text-dark">
+                                                                <i class="bi bi-box-arrow-left me-1"></i>Sign Out
+                                                            </span>
+                                                        {% else %}
+                                                            <span class="badge bg-secondary">{{ log.action|title }}</span>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>
+                                                        {% if log.computer_station %}
+                                                            <span class="station-badge">{{ log.computer_station }}</span>
+                                                        {% else %}
+                                                            <span class="text-muted">-</span>
+                                                        {% endif %}
+                                                    </td>
+
+                                                </tr>
+                                                {% endfor %}
+                                            {% else %}
+                                                <tr>
+                                                    <td colspan="6" class="text-center text-muted py-5">
+                                                        <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                                                        No activity logs found.
+                                                    </td>
+                                                </tr>
+                                            {% endif %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            
+                            <!-- Pagination -->
+                            {% if logs.has_other_pages %}
+                            <div class="card-footer">
+                                <nav aria-label="Logs pagination">
+                                    <ul class="pagination justify-content-center mb-0">
+                                        {% if logs.has_previous %}
+                                            <li class="page-item">
+                                                <a class="page-link" href="?page={{ logs.previous_page_number }}&search={{ request.GET.search|default:'' }}&action={{ request.GET.action|default:'' }}&station={{ request.GET.station|default:'' }}">
+                                                    <i class="bi bi-chevron-left"></i>
+                                                </a>
+                                            </li>
+                                        {% endif %}
+                                        
+                                        {% for num in logs.paginator.page_range %}
+                                            {% if logs.number == num %}
+                                                <li class="page-item active">
+                                                    <span class="page-link">{{ num }}</span>
+                                                </li>
+                                            {% elif num > logs.number|add:'-3' and num < logs.number|add:'3' %}
+                                                <li class="page-item">
+                                                    <a class="page-link" href="?page={{ num }}&search={{ request.GET.search|default:'' }}&action={{ request.GET.action|default:'' }}&station={{ request.GET.station|default:'' }}">{{ num }}</a>
+                                                </li>
+                                            {% endif %}
+                                        {% endfor %}
+                                        
+                                        {% if logs.has_next %}
+                                            <li class="page-item">
+                                                <a class="page-link" href="?page={{ logs.next_page_number }}&search={{ request.GET.search|default:'' }}&action={{ request.GET.action|default:'' }}&station={{ request.GET.station|default:'' }}">
+                                                    <i class="bi bi-chevron-right"></i>
+                                                </a>
+                                            </li>
+                                        {% endif %}
+                                    </ul>
+                                </nav>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Django Messages Display -->
+    {% if messages %}
+    <div class="messages-container d-none">
+        {% for message in messages %}
+        <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %}" data-message="{{ message }}">
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Filter Modal -->
+    <div class="modal fade" id="filterModal" tabindex="-1" aria-labelledby="filterModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="filterModalLabel">
+                        <i class="bi bi-funnel me-2"></i>
+                        Advanced Filters
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="advancedFilterForm">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="dateFrom" class="form-label">Date From</label>
+                                <input type="date" class="form-control" id="dateFrom" name="dateFrom">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="dateTo" class="form-label">Date To</label>
+                                <input type="date" class="form-control" id="dateTo" name="dateTo">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="timeFrom" class="form-label">Time From</label>
+                                <input type="time" class="form-control" id="timeFrom" name="timeFrom">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="timeTo" class="form-label">Time To</label>
+                                <input type="time" class="form-control" id="timeTo" name="timeTo">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="modalActionFilter" class="form-label">Action Type</label>
+                                <select class="form-select" id="modalActionFilter" name="action">
+                                    <option value="">All Actions</option>
+                                    <option value="sign-in">Sign In</option>
+                                    <option value="sign-out">Sign Out</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="modalStationFilter" class="form-label">Computer Station</label>
+                                <select class="form-select" id="modalStationFilter" name="station">
+                                    <option value="">All Stations</option>
+                                    {% for log in all_logs %}
+                                        {% if log.computer_station %}
+                                            <option value="{{ log.computer_station }}">{{ log.computer_station }}</option>
+                                        {% endif %}
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle me-2"></i>
+                        Cancel
+                    </button>
+                    <button type="button" class="btn btn-primary" id="applyFilters">
+                        <i class="bi bi-check-circle me-2"></i>
+                        Apply Filters
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Log Details Modal -->
+    <div class="modal fade" id="logDetailsModal" tabindex="-1" aria-labelledby="logDetailsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="logDetailsModalLabel">
+                        <i class="bi bi-info-circle me-2"></i>
+                        Log Details
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="logDetailsContent">
+                    <!-- Content will be loaded dynamically -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="exportLogDetail">
+                        <i class="bi bi-download me-2"></i>
+                        Export Details
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Show Django messages via SweetAlert
+            document.querySelectorAll('.messages-container .alert').forEach(function(alert) {
+                const message = alert.getAttribute('data-message');
+                if (alert.classList.contains('alert-danger') || alert.classList.contains('alert-error')) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: message,
+                        confirmButtonText: 'OK'
+                    });
+                } else if (alert.classList.contains('alert-success')) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success',
+                        text: message,
+                        confirmButtonText: 'OK'
+                    });
+                } else if (alert.classList.contains('alert-warning')) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Warning',
+                        text: message,
+                        confirmButtonText: 'OK'
+                    });
+                } else if (alert.classList.contains('alert-info')) {
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'Information',
+                        text: message,
+                        confirmButtonText: 'OK'
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'Notice',
+                        text: message,
+                        confirmButtonText: 'OK'
+                    });
+                }
+            });
+
+            // Search functionality
+            const searchInput = document.getElementById('searchLogs');
+            searchInput.addEventListener('input', function() {
+                filterLogs();
+            });
+            
+            // Action filter
+            const actionFilter = document.getElementById('actionFilter');
+            actionFilter.addEventListener('change', function() {
+                filterLogs();
+            });
+            
+            // Station filter
+            const stationFilter = document.getElementById('stationFilter');
+            stationFilter.addEventListener('change', function() {
+                filterLogs();
+            });
+            
+            // Clear filters
+            const clearFiltersBtn = document.getElementById('clearFilters');
+            clearFiltersBtn.addEventListener('click', function() {
+                searchInput.value = '';
+                actionFilter.value = '';
+                stationFilter.value = '';
+                filterLogs();
+            });
+            
+            // Export logs
+            const exportLogsBtn = document.getElementById('exportLogs');
+            exportLogsBtn.addEventListener('click', function() {
+                exportLogs();
+            });
+            
+            // Apply advanced filters
+            const applyFiltersBtn = document.getElementById('applyFilters');
+            applyFiltersBtn.addEventListener('click', function() {
+                applyAdvancedFilters();
+            });
+            
+            function filterLogs() {
+                const searchTerm = searchInput.value.toLowerCase();
+                const actionValue = actionFilter.value;
+                const stationValue = stationFilter.value;
+                
+                const rows = document.querySelectorAll('#logsTable tbody tr.log-row');
+                
+                rows.forEach(row => {
+                    const text = row.textContent.toLowerCase();
+                    const action = row.getAttribute('data-action');
+                    const station = row.getAttribute('data-station');
+                    
+                    const matchesSearch = !searchTerm || text.includes(searchTerm);
+                    const matchesAction = !actionValue || action === actionValue;
+                    const matchesStation = !stationValue || station === stationValue;
+                    
+                    if (matchesSearch && matchesAction && matchesStation) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+            }
+            
+            function exportLogs() {
+                // Implementation for exporting logs
+                Swal.fire({
+                    icon: 'info',
+                    title: 'Export',
+                    text: 'Export functionality would be implemented here!',
+                    confirmButtonText: 'OK'
+                });
+            }
+            
+            function applyAdvancedFilters() {
+                // Implementation for advanced filters
+                const modal = bootstrap.Modal.getInstance(document.getElementById('filterModal'));
+                modal.hide();
+                Swal.fire({
+                    icon: 'info',
+                    title: 'Advanced Filters',
+                    text: 'Advanced filters would be applied here!',
+                    confirmButtonText: 'OK'
+                });
+            }
+        });
+        
+        function viewLogDetails(logId) {
+            // Implementation for viewing log details
+            const modal = new bootstrap.Modal(document.getElementById('logDetailsModal'));
+            document.getElementById('logDetailsContent').innerHTML = `
+                <div class="text-center">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2">Loading log details...</p>
+                </div>
+            `;
+            modal.show();
+            
+            // Simulate loading log details
+            setTimeout(() => {
+                document.getElementById('logDetailsContent').innerHTML = `
+                    <div class="log-details">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6>Log Information</h6>
+                                <p><strong>Log ID:</strong> ${logId}</p>
+                                <p><strong>Timestamp:</strong> ${new Date().toLocaleString()}</p>
+                                <p><strong>Action:</strong> Sign In</p>
+                            </div>
+                            <div class="col-md-6">
+                                <h6>User Information</h6>
+                                <p><strong>Student ID:</strong> 2021-0001</p>
+                                <p><strong>Name:</strong> John Doe</p>
+                                <p><strong>Station:</strong> PC-01</p>
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-12">
+                                <h6>Notes</h6>
+                                <p class="text-muted">No additional notes for this log entry.</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }, 1000);
+        }
+        
+        function exportLogEntry(logId) {
+            // Implementation for exporting individual log entry
+            Swal.fire({
+                icon: 'info',
+                title: 'Export Log Entry',
+                text: `Exporting log entry ${logId}...`,
+                confirmButtonText: 'OK'
+            });
+        }
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Computer Units Management</title>
+    {% load static %}
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="icon" type="image/png" href="{% static 'img/icon.png' %}">
+
+    <link href="{% static 'dashboard.css' %}" rel="stylesheet">
+    <link href="{% static 'sidebar.css' %}" rel="stylesheet">
+    <link href="{% static 'header.css' %}" rel="stylesheet">
+    <link href="{% static 'computer_units.css' %}" rel="stylesheet">
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            {% include 'structure/sidebar.html' %}
+            
+            <!-- Main Content -->
+            <div class="col-md-9 col-lg-10 px-0">
+                <div class="main-content">
+                    <!-- Header -->
+                    {% include 'structure/header.html' %}
+                    
+                    <!-- Computer Units Content -->
+                    <div class="container-fluid py-4">
+                        <!-- Page Header -->
+                        <div class="page-header">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h1 class="page-title">
+                                        <i class="bi bi-pc-display me-2"></i>
+                                        Computer Units Management
+                                    </h1>
+                                    <p class="page-subtitle">Manage computer lab units, their specifications, and status</p>
+                                   
+                                </div>
+                                <button class="btn btn-primary btn-lg add-unit-btn" data-bs-toggle="modal" data-bs-target="#addUnitModal">
+                                    <i class="bi bi-plus-circle me-2"></i>
+                                    Add New Unit
+                                </button>
+                            </div>
+                        </div>
+                    
+
+                        <!-- Units Cards Section -->
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="card units-table-card">
+                                    <div class="card-header d-flex justify-content-between align-items-center">
+                                        <h5 class="card-title mb-0">
+                                            <i class="bi bi-grid-3x3-gap me-2"></i>
+                                            Current Computer Units
+                                        </h5>
+                                        <div class="table-actions">
+                                            <div class="input-group search-input-group">
+                                                <span class="input-group-text">
+                                                    <i class="bi bi-search"></i>
+                                                </span>
+                                                <input type="text" class="form-control" id="searchUnits" placeholder="Search units...">
+                                            </div>
+                                            <button class="btn btn-outline-primary ms-2" id="exportUnits">
+                                                <i class="bi bi-download me-2"></i>
+                                                Export
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row g-3" id="unitsGrid">
+                                            {% if units %}
+                                                {% for unit in units %}
+                                                <div class="col-12 col-md-6 col-lg-3 unit-card">
+                                                    <div class="card h-100 shadow-sm">
+                                                        <div class="card-header d-flex justify-content-between align-items-center">
+                                                            <div class="d-flex align-items-center">
+                                                                <div class="unit-icon me-2">
+                                                                    <i class="bi bi-pc-display"></i>
+                                                                </div>
+                                                                <div>
+                                                                    <div class="unit-id fw-semibold">{{ unit.unit_id }}</div>
+                                                                    <div class="text-muted small">Computer Unit</div>
+                                                                </div>
+                                                            </div>
+                                                            <div>
+                                                                {% if unit.status == 'available' %}
+                                                                    <span class="badge bg-success">Available</span>
+                                                                {% elif unit.status == 'in-use' %}
+                                                                    <span class="badge bg-warning">In Use</span>
+                                                                {% elif unit.status == 'maintenance' %}
+                                                                    <span class="badge bg-danger">Maintenance</span>
+                                                                {% elif unit.status == 'retired' %}
+                                                                    <span class="badge bg-secondary">Retired</span>
+                                                                {% endif %}
+                                                            </div>
+                                                        </div>
+                                                      
+                                                        <div class="card-footer bg-transparent">
+                                                            <div class="action-buttons d-flex gap-2">
+                                                                <button class="btn btn-sm btn-outline-info view-unit-btn" title="View Details" data-unit-pk="{{ unit.id }}" data-unit-id="{{ unit.unit_id }}" data-status="{{ unit.status }}">
+                                                                    <i class="bi bi-eye"></i>
+                                                                </button>
+                                                                <button class="btn btn-sm btn-outline-primary edit-unit-btn" title="Edit" data-unit-pk="{{ unit.id }}" data-unit-id="{{ unit.unit_id }}" data-status="{{ unit.status }}">
+                                                                    <i class="bi bi-pencil"></i>
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                {% endfor %}
+                                            {% else %}
+                                                <div class="col-12 text-center text-muted py-5">
+                                                    <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                                                    No computer units found. Add your first unit using the "Add New Unit" button above.
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Unit Modal -->
+    <div class="modal fade" id="addUnitModal" tabindex="-1" aria-labelledby="addUnitModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addUnitModalLabel">
+                        <i class="bi bi-plus-circle me-2"></i>
+                        Add New Computer Unit
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addUnitForm" class="add-unit-form" method="POST" action="{% url 'add_computer_unit' %}">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-12 mb-3">
+                                <label for="unitId" class="form-label">Unit ID *</label>
+                                <input type="text" class="form-control" id="unitId" name="unitId" required>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-12 mb-3">
+                                <label for="status" class="form-label">Status *</label>
+                                <select class="form-select" id="status" name="status" required>
+                                    <option value="">Select Status</option>
+                                    <option value="available">Available</option>
+                                    
+                                    <option value="maintenance">Under Maintenance</option>
+                                    
+                                </select>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle me-2"></i>
+                        Cancel
+                    </button>
+                    <button type="submit" form="addUnitForm" class="btn btn-primary">
+                        <i class="bi bi-check-circle me-2"></i>
+                        Add Unit
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- View Unit Details Modal -->
+    <div class="modal fade" id="viewUnitModal" tabindex="-1" aria-labelledby="viewUnitModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="viewUnitModalLabel">
+                        <i class="bi bi-eye me-2"></i>
+                        Computer Unit Details
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold">Unit ID:</label>
+                            <p class="form-control-plaintext" id="viewUnitId"></p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold">Status:</label>
+                            <p class="form-control-plaintext" id="viewUnitStatus"></p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold">Created Date:</label>
+                            <p class="form-control-plaintext" id="viewUnitCreated"></p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold">Last Modified:</label>
+                            <p class="form-control-plaintext" id="viewUnitModified"></p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12 mb-3">
+                            <label class="form-label fw-semibold">Current Activity:</label>
+                            <p class="form-control-plaintext" id="viewUnitActivity">No current activity</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle me-2"></i>
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Unit Modal -->
+    <div class="modal fade" id="editUnitModal" tabindex="-1" aria-labelledby="editUnitModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editUnitModalLabel">
+                        <i class="bi bi-pencil-square me-2"></i>
+                        Edit Computer Unit
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editUnitForm" class="edit-unit-form" method="POST" action="#">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-12 mb-3">
+                                <label for="editUnitId" class="form-label">Unit ID *</label>
+                                <input type="text" class="form-control" id="editUnitId" name="unitId" required>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-12 mb-3">
+                                <label for="editStatus" class="form-label">Status *</label>
+                                <select class="form-select" id="editStatus" name="status" required>
+                                    <option value="">Select Status</option>
+                                    <option value="available">Available</option>
+                                    <option value="in-use">In Use</option>
+                                    <option value="maintenance">Under Maintenance</option>
+                                    <option value="retired">Retired</option>
+                                </select>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle me-2"></i>
+                        Cancel
+                    </button>
+                    <button type="submit" form="editUnitForm" class="btn btn-primary">
+                        <i class="bi bi-check-circle me-2"></i>
+                        Save Changes
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Django Messages Display -->
+    {% if messages %}
+    <div class="messages-container d-none">
+        {% for message in messages %}
+        <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %}" data-message="{{ message }}">
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Show Django messages via SweetAlert
+            document.querySelectorAll('.messages-container .alert').forEach(function(alert) {
+                const message = alert.getAttribute('data-message');
+                if (alert.classList.contains('alert-danger') || alert.classList.contains('alert-error')) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: message,
+                        confirmButtonText: 'OK'
+                    });
+                } else if (alert.classList.contains('alert-success')) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success',
+                        text: message,
+                        confirmButtonText: 'OK'
+                    });
+                } else if (alert.classList.contains('alert-warning')) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Warning',
+                        text: message,
+                        confirmButtonText: 'OK'
+                    });
+                } else if (alert.classList.contains('alert-info')) {
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'Information',
+                        text: message,
+                        confirmButtonText: 'OK'
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'Notice',
+                        text: message,
+                        confirmButtonText: 'OK'
+                    });
+                }
+            });
+
+            // Form submission handling with confirmation
+            const addUnitForm = document.getElementById('addUnitForm');
+            addUnitForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                Swal.fire({
+                    title: 'Add New Computer Unit',
+                    text: 'Are you sure you want to add this computer unit?',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'Yes, Add Unit',
+                    cancelButtonText: 'Cancel'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        this.submit();
+                    }
+                });
+            });
+
+            // Edit form confirmation
+            const editForm = document.getElementById('editUnitForm');
+            editForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                Swal.fire({
+                    title: 'Update Computer Unit',
+                    text: 'Are you sure you want to update this computer unit?',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'Yes, Update',
+                    cancelButtonText: 'Cancel'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        this.submit();
+                    }
+                });
+            });
+            
+            // Search functionality
+            const searchInput = document.getElementById('searchUnits');
+            searchInput.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                const cards = document.querySelectorAll('#unitsGrid .unit-card');
+                
+                cards.forEach(card => {
+                    const text = card.textContent.toLowerCase();
+                    if (text.includes(searchTerm)) {
+                        card.style.display = '';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+            });
+            
+            // Export functionality
+            const exportBtn = document.getElementById('exportUnits');
+            exportBtn.addEventListener('click', function() {
+                Swal.fire({
+                    icon: 'info',
+                    title: 'Export',
+                    text: 'Export functionality would be implemented here!',
+                    confirmButtonText: 'OK'
+                });
+            });
+            
+            // Action button handlers
+            const viewModalEl = document.getElementById('viewUnitModal');
+            const viewModal = new bootstrap.Modal(viewModalEl);
+            const editModalEl = document.getElementById('editUnitModal');
+            const editModal = new bootstrap.Modal(editModalEl);
+            const editUnitForm = document.getElementById('editUnitForm');
+            const editUnitIdInput = document.getElementById('editUnitId');
+            const editStatusSelect = document.getElementById('editStatus');
+
+            document.querySelectorAll('.action-buttons .btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const action = this.title.toLowerCase();
+                    const container = this.closest('.unit-card') || this.closest('tr');
+                    const unitId = container.querySelector('.unit-id').textContent;
+                    
+                    if (action === 'view details') {
+                        // Populate view modal with unit details
+                        document.getElementById('viewUnitId').textContent = unitId.trim();
+                        document.getElementById('viewUnitStatus').textContent = this.getAttribute('data-status') || this.dataset.status;
+                        
+                        // Set current date as placeholder (you can replace this with actual data from your model)
+                        const currentDate = new Date().toLocaleDateString();
+                        document.getElementById('viewUnitCreated').textContent = currentDate;
+                        document.getElementById('viewUnitModified').textContent = currentDate;
+                        
+                        // Show view modal
+                        viewModal.show();
+                    } else if (action === 'edit') {
+                        const pk = this.getAttribute('data-unit-pk') || this.dataset.unitPk;
+                        const currentStatus = this.getAttribute('data-status') || this.dataset.status;
+
+                        // Prefill form
+                        editUnitIdInput.value = unitId.trim();
+                        editStatusSelect.value = currentStatus;
+
+                        // Set form action
+                        editUnitForm.setAttribute('action', `/computer_units/edit/${pk}/`);
+
+                        // Show modal
+                        editModal.show();
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
+

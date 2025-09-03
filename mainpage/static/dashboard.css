@@ -1,0 +1,248 @@
+
+        :root {
+            --primary-blue: #5e72e4;
+            --secondary-blue: #f7fafc;
+            --dark-blue: #172b4d;
+            --light-gray: #f8f9fa;
+            --success-green: #2dce89;
+            --danger-red: #f5365c;
+            --warning-orange: #fb6340;
+            --info-cyan: #11cdef;
+        }
+        
+        body {
+            background-color: var(--secondary-blue);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        
+       
+        .main-content {
+            background-color: var(--secondary-blue);
+            min-height: 100vh;
+            padding: 0;
+        }
+        
+        /* Proper spacing for main content */
+        .main-content .container-fluid {
+            padding: 1rem;
+        }
+        
+        /* Header styling */
+        .header {
+            background: white;
+            border-bottom: 1px solid #e9ecef;
+            padding: 1rem 0;
+            margin: 0;
+        }
+        
+        /* KPI Cards */
+        .kpi-card {
+            background: white;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+            border: none;
+            transition: transform 0.2s ease;
+            margin-bottom: 1rem;
+            margin-right: .8rem;
+            margin-left: .92rem;
+        }
+        
+        .kpi-card:hover {
+            transform: translateY(-2px);
+        }
+        
+        .kpi-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+        }
+        
+        .kpi-icon.purple { background-color: var(--primary-blue); }
+        .kpi-icon.red { background-color: var(--danger-red); }
+        .kpi-icon.green { background-color: var(--success-green); }
+        .kpi-icon.orange { background-color: var(--warning-orange); }
+        .kpi-icon.yellow { background-color: #ffc107; }
+        
+        .kpi-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--dark-blue);
+            margin-bottom: 0.25rem;
+        }
+        
+        .kpi-label {
+            color: #8898aa;
+            font-size: 0.875rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.025em;
+        }
+        
+        .kpi-change {
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+        
+        .kpi-change.positive { color: var(--success-green); }
+        .kpi-change.negative { color: var(--danger-red); }
+        
+        /* Chart and Data Cards */
+        .chart-card {
+            background: white;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+            border: none;
+            margin-bottom: 1rem;
+        }
+        
+        .promo-card {
+            background: linear-gradient(135deg, var(--dark-blue) 0%, #2b4c7e 100%);
+            color: white;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+            border: none;
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 1rem;
+        }
+        
+        .promo-illustration {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 200px;
+            height: 100%;
+            opacity: 0.3;
+        }
+        
+        .play-button {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .data-list-card {
+            background: white;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+            border: none;
+            margin-bottom: 1rem;
+        }
+        
+        /* Data List Items */
+        .country-item {
+            display: flex;
+            align-items: center;
+            padding: 1rem 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .country-item:last-child {
+            border-bottom: none;
+        }
+        
+        .country-flag {
+            width: 32px;
+            height: 24px;
+            margin-right: 1rem;
+            border-radius: 0.25rem;
+        }
+        
+        .country-info h6 {
+            margin: 0;
+            font-weight: 600;
+            color: var(--dark-blue);
+        }
+        
+        .country-info p {
+            margin: 0;
+            color: #8898aa;
+            font-size: 0.875rem;
+        }
+        
+        .category-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .category-item:last-child {
+            border-bottom: none;
+        }
+        
+        .category-info {
+            display: flex;
+            align-items: center;
+        }
+        
+        .category-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+            color: white;
+        }
+        
+        .category-icon.blue { background-color: var(--primary-blue); }
+        .category-icon.green { background-color: var(--success-green); }
+        .category-icon.orange { background-color: var(--warning-orange); }
+        
+        .chart-container {
+            position: relative;
+            height: 200px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .main-content .container-fluid {
+                padding: 0.5rem;
+            }
+            
+            .kpi-card {
+                padding: 1rem;
+            }
+            
+            .kpi-value {
+                font-size: 1.5rem;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .main-content .container-fluid {
+                padding: 0.25rem;
+            }
+            
+            .kpi-card {
+                padding: 0.75rem;
+            }
+            
+            .kpi-value {
+                font-size: 1.25rem;
+            }
+        }
+  

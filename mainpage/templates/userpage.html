@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lab Sign In</title>
+    {% load static %}
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="icon" type="image/png" href="{% static 'img/icon.png' %}">
+    <link href="{% static 'userpage.css' %}" rel="stylesheet">
+</head>
+<body style="background-image: url('{% static "img/computerlab.jpg" %}'); background-size: cover; background-repeat: no-repeat; background-attachment: fixed;">
+
+<br><br><br><br>
+
+    <h1 class="page-title text-center">COMPUTER LABORATORY MANAGEMENT</h1>
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card shadow-sm">
+                    <div class="card-header text-center">
+                        <h4 class="mb-0"><i class="bi bi-box-arrow-in-right me-2"></i>Sign In/Sign Out</h4>
+                    </div>
+
+                
+                    <div class="card-body">
+                        {% if messages %}
+                            {% for message in messages %}
+                                <div class="d-none alert alert-{{ message.tags }}" role="alert">{{ message }}</div>
+                            {% endfor %}
+                        {% endif %}
+
+                        <form id="signInForm" method="POST" action="{% url 'user_sign_in' %}">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                <label for="student_id" class="form-label">Student ID</label>
+                                <input type="text" class="form-control" id="student_id" name="student_id" placeholder="Enter your Student ID" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100">Continue</button>
+                        </form>
+                    </div>
+                    <div class="card-footer text-center text-muted">
+                        Please contact the lab assistant if you need help.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Show any Django messages via SweetAlert
+            document.querySelectorAll('.alert').forEach(a => {
+                const text = a.textContent.trim();
+                if (a.classList.contains('alert-success')) {
+                    Swal.fire({ icon: 'success', title: 'Signed In', text: text, confirmButtonText: 'OK' });
+                } else if (a.classList.contains('alert-danger') || a.classList.contains('alert-error')) {
+                    Swal.fire({ icon: 'error', title: 'Error', text: text, confirmButtonText: 'OK' });
+                } else if (a.classList.contains('alert-warning')) {
+                    Swal.fire({ icon: 'warning', title: 'Notice', text: text, confirmButtonText: 'OK' });
+                } else if (a.classList.contains('alert-info')) {
+                    Swal.fire({ icon: 'info', title: 'Info', text: text, confirmButtonText: 'OK' });
+                }
+            });
+
+            const form = document.getElementById('signInForm');
+            form.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const formData = new FormData(form);
+                // First step: send only student_id to fetch available PCs
+                try {
+                    const csrfToken = form.querySelector('input[name="csrfmiddlewaretoken"]').value;
+                    const res = await fetch(form.action, {
+                        method: 'POST',
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'X-CSRFToken': csrfToken
+                        },
+                        body: formData
+                    });
+
+                    let data;
+                    try {
+                        data = await res.json();
+                    } catch (_) {
+                        data = { success: false, error: 'Unexpected server response.' };
+                    }
+
+                    if (!res.ok || !data.success) {
+                        Swal.fire({ icon: 'error', title: 'Error', text: data.error || 'Unable to validate Student ID.' });
+                        return;
+                    }
+
+                    if (data.signed_out) {
+                        Swal.fire({ icon: 'success', title: 'Signed Out', text: data.message || 'Signed out successfully.' });
+                        form.reset();
+                        return;
+                    }
+
+                    const units = data.units || [];
+                    if (!units.length) {
+                        Swal.fire({ icon: 'info', title: 'No PCs Available', text: 'No PCs are currently available. Please try again later.' });
+                        return;
+                    }
+
+                    // Prompt user to select PC
+                    const { value: selectedUnit } = await Swal.fire({
+                        title: 'Select a PC',
+                        input: 'select',
+                        inputOptions: units.reduce((acc, u) => { acc[u] = u; return acc; }, {}),
+                        inputPlaceholder: 'Choose a PC...',
+                        showCancelButton: true,
+                        confirmButtonText: 'Sign In',
+                        cancelButtonText: 'Cancel',
+                        inputValidator: (value) => {
+                            if (!value) return 'Please select a PC to continue.';
+                        }
+                    });
+
+                    if (!selectedUnit) return; // cancelled
+
+                    // Second step: submit student_id + unit_id to finalize sign-in
+                    const finalizeFormData = new FormData();
+                    finalizeFormData.append('csrfmiddlewaretoken', csrfToken);
+                    finalizeFormData.append('student_id', formData.get('student_id'));
+                    finalizeFormData.append('unit_id', selectedUnit);
+
+                    const res2 = await fetch(form.action, {
+                        method: 'POST',
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'X-CSRFToken': csrfToken
+                        },
+                        body: finalizeFormData
+                    });
+
+                    let data2;
+                    try {
+                        data2 = await res2.json();
+                    } catch (_) {
+                        data2 = { success: false, error: 'Unexpected server response.' };
+                    }
+
+                    if (!res2.ok || !data2.success) {
+                        Swal.fire({ icon: 'error', title: 'Error', text: data2.error || 'Unable to complete sign-in.' });
+                        return;
+                    }
+
+                    Swal.fire({ icon: 'success', title: 'Signed In', text: data2.message || `Signed in successfully. Proceed to PC ${selectedUnit}.` });
+                    form.reset();
+                } catch (err) {
+                    Swal.fire({ icon: 'error', title: 'Network Error', text: 'Please check your connection and try again.' });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,18 @@
+/* Styles for the simple sign-in page */
+
+
+.page-title {
+    text-align: center;
+    color: #000000;
+    font-size: 40px;
+    font-weight: bold;
+    margin-top: 20px;
+}
+
+.card-header {
+    background-color: #f8f9fa;
+}
+
+.card-footer {
+    background-color: #f8f9fa;
+}

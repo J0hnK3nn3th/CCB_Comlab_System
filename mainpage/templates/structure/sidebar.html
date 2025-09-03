@@ -1,0 +1,39 @@
+<div class="col-md-3 col-lg-2 px-0">
+    <div class="sidebar">
+        <div class="sidebar-brand">
+            <h4 class="mb-0">City College of Bayawan</h4>
+        </div>
+        
+        <nav class="sidebar-nav">
+            <div class="px-3 mb-3">
+                <small class="text-uppercase text-white-50">Main Navigation</small>
+            </div>
+            
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a class="nav-link {% if current_page == 'dashboard' %}active{% endif %}" href="{% url 'dashboard' %}">
+                        <i class="bi bi-display"></i>
+                        Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if current_page == 'computer_users' %}active{% endif %}" href="{% url 'computer_users' %}">
+                        <i class="bi bi-calendar3"></i>
+                        Computer Users
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if current_page == 'computer_units' %}active{% endif %}" href="{% url 'computer_units' %}">
+                        <i class="bi bi-receipt"></i>
+                       Computer Units
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if current_page == 'logs' %}active{% endif %}" href="{% url 'logs' %}">
+                        <i class="bi bi-clipboard-data"></i>
+                        Logs
+                    </a>
+                </li>
+        </nav>
+    </div>
+</div>
