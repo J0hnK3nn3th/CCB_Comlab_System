@@ -5,13 +5,90 @@ from django.views.decorators.http import require_http_methods
 from django.utils import timezone
 from django.core.paginator import Paginator
 from django.contrib import messages
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.models import User
 import json
 from datetime import datetime
 from .models import ComputerUser, ComputerUnit, ActivityLog
 from django.db import models
 
 # Create your views here.
+
+def login_view(request):
+    """Admin login page using Django's auth_user table"""
+    if request.method == 'POST':
+        username = request.POST.get('student_id', '').strip()  # Using student_id as username
+        password = request.POST.get('password', '').strip()
+        
+        if not username or not password:
+            messages.error(request, 'Please enter both Username and Password.')
+            return render(request, 'login.html')
+        
+        # Authenticate using Django's built-in authentication
+        user = authenticate(request, username=username, password=password)
+        
+        if user is not None:
+            # Check if user is active
+            if not user.is_active:
+                messages.error(request, 'Account is not active. Please contact administrator.')
+                return render(request, 'login.html')
+            
+            # Check if user has staff status (admin access)
+            if not user.is_staff:
+                messages.error(request, 'Access denied. Admin privileges required.')
+                return render(request, 'login.html')
+            
+            # Login the user (creates session)
+            login(request, user)
+            
+            # Store additional info in session
+            request.session['admin_user_name'] = user.get_full_name() or user.username
+            request.session['admin_username'] = user.username
+            
+            # Log the admin login in activity log
+            ActivityLog.objects.create(
+                user=None,  # No ComputerUser relation
+                student_id=user.username,
+                full_name=user.get_full_name() or user.username,
+                action='sign-in',
+                computer_station='Admin Dashboard',
+                notes=f'Admin login to dashboard - Django User: {user.username}'
+            )
+            
+            messages.success(request, f'Welcome back, {user.get_full_name() or user.username}!')
+            return redirect('dashboard')
+        else:
+            messages.error(request, 'Invalid username or password.')
+            return render(request, 'login.html')
+    
+    # If GET request or failed login, show login form
+    return render(request, 'login.html')
+
+def logout_view(request):
+    """Admin logout using Django's built-in logout"""
+    if request.user.is_authenticated:
+        # Log the admin logout
+        ActivityLog.objects.create(
+            user=None,  # No ComputerUser relation
+            student_id=request.user.username,
+            full_name=request.user.get_full_name() or request.user.username,
+            action='sign-out',
+            computer_station='Admin Dashboard',
+            notes=f'Admin logout from dashboard - Django User: {request.user.username}'
+        )
+        
+        # Logout using Django's built-in logout
+        logout(request)
+    
+    messages.success(request, 'You have been logged out successfully.')
+    return redirect('login')
+
 def dashboard(request):
+    # Check if user is logged in and is staff
+    if not request.user.is_authenticated or not request.user.is_staff:
+        messages.error(request, 'Please log in to access the dashboard.')
+        return redirect('login')
+    
     total_users = ComputerUser.objects.count()
     total_units = ComputerUnit.objects.count()
     available_units = ComputerUnit.objects.filter(status='available').count()
@@ -30,10 +107,16 @@ def dashboard(request):
         'occupied_units_list': occupied_units_list,
         'maintenance_units_list': maintenance_units_list,
         'current_page': 'dashboard',
+        'admin_user_name': request.user.get_full_name() or request.user.username,
     }
     return render(request, 'dashboard.html', context)
 
 def computer_users(request):
+    # Check if user is logged in and is staff
+    if not request.user.is_authenticated or not request.user.is_staff:
+        messages.error(request, 'Please log in to access this page.')
+        return redirect('login')
+    
     # Get all users for display
     users = ComputerUser.objects.all().order_by('-created_at')
     
@@ -48,10 +131,16 @@ def computer_users(request):
         'active_users': users.filter(status='active').count(),
         'all_users': users,  # Add this for the template to use
         'current_page': 'computer_users',
+        'admin_user_name': request.user.get_full_name() or request.user.username,
     }
     return render(request, 'computer_users.html', context)
 
 def computer_units(request):
+    # Check if user is logged in and is staff
+    if not request.user.is_authenticated or not request.user.is_staff:
+        messages.error(request, 'Please log in to access this page.')
+        return redirect('login')
+    
     # Get all computer units for display
     units = ComputerUnit.objects.all().order_by('-created_at')
     
@@ -60,11 +149,17 @@ def computer_units(request):
         'total_units': units.count(),
         'available_units': units.filter(status='available').count(),
         'current_page': 'computer_units',
+        'admin_user_name': request.user.get_full_name() or request.user.username,
     }
     return render(request, 'computer_units.html', context)
 
 def add_user(request):
     """Handle form submission to add a new user"""
+    # Check if user is logged in and is staff
+    if not request.user.is_authenticated or not request.user.is_staff:
+        messages.error(request, 'Please log in to access this page.')
+        return redirect('login')
+    
     if request.method == 'POST':
         try:
             # Get form data
@@ -112,6 +207,11 @@ def add_user(request):
 
 def edit_user(request, user_id):
     """Handle form submission to edit an existing user"""
+    # Check if user is logged in and is staff
+    if not request.user.is_authenticated or not request.user.is_staff:
+        messages.error(request, 'Please log in to access this page.')
+        return redirect('login')
+    
     user = get_object_or_404(ComputerUser, id=user_id)
     
     if request.method == 'POST':
@@ -323,7 +423,7 @@ def user_sign_in(request):
 
         user.computer_station = unit.unit_id
         # Use system local time for last login tracking
-        user.last_login = datetime.now()
+        user.last_login = timezone.now()
         user.save(update_fields=['computer_station', 'last_login'])
 
         # Log sign-in
@@ -333,7 +433,7 @@ def user_sign_in(request):
             full_name=user.full_name,
             action='sign-in',
             computer_station=unit.unit_id,
-            notes=f'Signed in via kiosk form - Last login updated to {datetime.now().strftime("%B %d, %Y at %I:%M %p")}'
+            notes=f'Signed in via kiosk form - Last login updated to {timezone.now().strftime("%B %d, %Y at %I:%M %p")}'
         )
 
         success_message = f"Signed in successfully. Proceed to PC {unit.unit_id}."
@@ -349,7 +449,20 @@ def user_sign_in(request):
     return render(request, 'userpage.html', context)
 
 def logs_view(request):
-    logs = ActivityLog.objects.select_related('user').all().order_by('-timestamp')
+    # Check if user is logged in and is staff
+    if not request.user.is_authenticated or not request.user.is_staff:
+        messages.error(request, 'Please log in to access this page.')
+        return redirect('login')
+    
+    # Filter out admin activities - only show student sign-ins/sign-outs
+    logs = ActivityLog.objects.select_related('user').exclude(
+        computer_station='Admin Dashboard'
+    ).exclude(
+        notes__icontains='Admin login'
+    ).exclude(
+        notes__icontains='Admin logout'
+    ).order_by('-timestamp')
+    
     # Optional pagination similar to users page
     paginator = Paginator(logs, 20)
     page_number = request.GET.get('page')
@@ -358,6 +471,7 @@ def logs_view(request):
         'logs': page_obj,
         'all_logs': logs,
         'current_page': 'logs',
+        'admin_user_name': request.user.get_full_name() or request.user.username,
     }
     return render(request, 'logs.html', context)
 

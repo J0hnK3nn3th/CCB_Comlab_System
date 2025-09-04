@@ -1,6 +1,5 @@
 from django.db import models
 from django.utils import timezone
-from datetime import datetime
 
 # Create your models here.
 
@@ -27,6 +26,7 @@ class ComputerUser(models.Model):
     access_level = models.CharField(max_length=20, choices=ACCESS_LEVEL_CHOICES, default='student', verbose_name="Access Level")
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active', verbose_name="Status")
     computer_station = models.CharField(max_length=50, blank=True, null=True, verbose_name="Computer Station")
+    password = models.CharField(max_length=128, blank=True, null=True, verbose_name="Password", help_text="Password for admin users")
     last_login = models.DateTimeField(blank=True, null=True, verbose_name="Last Login")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Created At")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Updated At")
@@ -45,7 +45,7 @@ class ComputerUser(models.Model):
     
     def update_last_login(self):
         # Use system local time for last login tracking
-        self.last_login = datetime.now()
+        self.last_login = timezone.now()
         self.save(update_fields=['last_login'])
 
 

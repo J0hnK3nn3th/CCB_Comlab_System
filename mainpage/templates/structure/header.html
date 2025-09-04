@@ -38,6 +38,25 @@
             cancelButtonText: 'Cancel'
         });
     };
+
+    // Logout confirmation
+    function confirmLogout() {
+        Swal.fire({
+            title: 'Are you sure?',
+            text: "You will be logged out of the admin panel.",
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Yes, logout',
+            cancelButtonText: 'Cancel'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = '{% url "logout" %}';
+            }
+        });
+        return false;
+    }
 </script>
 
 <div class="header" style="margin-top: 10px;">
@@ -50,9 +69,17 @@
                 <!-- Breadcrumb removed -->
             </div>
             <div class="col-md-4">
-                <div class="d-flex justify-content-end gap-2">
-                    <input style="width: 200px;" type="text" class="form-control search-box" placeholder="Type here...">
-                    <button class="btn btn-signin">Search</button>
+                <div class="d-flex justify-content-end align-items-center gap-3">
+                    {% if admin_user_name %}
+                        <span class="admin-welcome">
+                            <i class="fas fa-user-shield"></i>
+                            Welcome, {{ admin_user_name }}
+                        </span>
+                        <a href="{% url 'logout' %}" class="btn btn-logout" onclick="return confirmLogout()">
+                            <i class="fas fa-sign-out-alt"></i>
+                            Logout
+                        </a>
+                    {% endif %}
                 </div>
             </div>
         </div>

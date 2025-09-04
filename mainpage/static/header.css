@@ -45,6 +45,48 @@
     box-shadow: 0 2px 8px rgba(94, 114, 228, 0.3);
 }
 
+/* Admin welcome and logout styles */
+.admin-welcome {
+    color: #2d3748;
+    font-weight: 600;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.admin-welcome i {
+    color: var(--primary-blue);
+    font-size: 16px;
+}
+
+.btn-logout {
+    background: #e53e3e;
+    border: none;
+    border-radius: 0.5rem;
+    padding: 0.5rem 1rem;
+    color: white;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    font-size: 14px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-logout:hover {
+    background: #c53030;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(229, 62, 62, 0.3);
+    color: white;
+    text-decoration: none;
+}
+
+.btn-logout i {
+    font-size: 14px;
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
     .header .container-fluid {

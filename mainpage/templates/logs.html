@@ -109,22 +109,20 @@
                                     <table class="table table-hover mb-0" id="logsTable">
                                         <thead class="table-light">
                                             <tr>
-                                                <th scope="col" class="text-center col-number">
-                                                    <i class="bi bi-hash"></i>
-                                                </th>
-                                                <th scope="col" class="col-timestamp">
+                                                
+                                                <th scope="col" class="col-timestamp text-center">
                                                     <i class="bi bi-clock me-1"></i>Timestamp
                                                 </th>
-                                                <th scope="col" class="col-student-id">
+                                                <th scope="col" class="col-student-id text-center">
                                                     <i class="bi bi-person me-1"></i>Student ID
                                                 </th>
-                                                <th scope="col" class="col-full-name">
+                                                <th scope="col" class="col-full-name text-center">
                                                     <i class="bi bi-person-badge me-1"></i>Full Name
                                                 </th>
-                                                <th scope="col" class="col-action">
+                                                <th scope="col" class="col-action text-center">
                                                     <i class="bi bi-arrow-left-right me-1"></i>Action
                                                 </th>
-                                                <th scope="col" class="col-station">
+                                                <th scope="col" class="col-station text-center">
                                                     <i class="bi bi-pc-display me-1"></i>Station
                                                 </th>
                                             </tr>
@@ -133,25 +131,41 @@
                                             {% if logs %}
                                                 {% for log in logs %}
                                                 <tr class="log-row" data-action="{{ log.action }}" data-station="{{ log.computer_station|default:'' }}">
-                                                    <td class="text-center text-muted">{{ forloop.counter }}</td>
-                                                    <td>
+                                                  
+                                                    <td class="text-center">
                                                         <div class="timestamp-info">
                                                             <div class="timestamp-main">{{ log.timestamp|date:"M d, Y" }}</div>
-                                                            <div class="timestamp-sub">{{ log.timestamp|date:"H:i:s" }}</div>
+                                                            <div class="timestamp-sub">{{ log.timestamp|date:"H:i" }}</div>
                                                         </div>
                                                     </td>
-                                                    <td>
-                                                        <span class="student-id">{{ log.student_id|default:log.user.student_id|default:"N/A" }}</span>
+                                                    <td class="text-center">
+                                                        <span class="student-id">
+                                                            {% if log.student_id %}
+                                                                {{ log.student_id }}
+                                                            {% elif log.user %}
+                                                                {{ log.user.student_id|default:"N/A" }}
+                                                            {% else %}
+                                                                N/A
+                                                            {% endif %}
+                                                        </span>
                                                     </td>
-                                                    <td>
+                                                    <td class="text-center">
                                                         <div class="user-info">
-                                                            <div class="user-name">{{ log.full_name|default:log.user.full_name|default:"Unknown User" }}</div>
+                                                            <div class="user-name">
+                                                                {% if log.full_name %}
+                                                                    {{ log.full_name }}
+                                                                {% elif log.user %}
+                                                                    {{ log.user.full_name|default:"Unknown User" }}
+                                                                {% else %}
+                                                                    Unknown User
+                                                                {% endif %}
+                                                            </div>
                                                             {% if log.user %}
                                                                 <div class="user-course text-muted small">{{ log.user.course }}</div>
                                                             {% endif %}
                                                         </div>
                                                     </td>
-                                                    <td>
+                                                    <td class="text-center">
                                                         {% if log.action == 'sign-in' %}
                                                             <span class="badge bg-success">
                                                                 <i class="bi bi-box-arrow-in-right me-1"></i>Sign In
@@ -164,7 +178,7 @@
                                                             <span class="badge bg-secondary">{{ log.action|title }}</span>
                                                         {% endif %}
                                                     </td>
-                                                    <td>
+                                                    <td class="text-center">
                                                         {% if log.computer_station %}
                                                             <span class="station-badge">{{ log.computer_station }}</span>
                                                         {% else %}
@@ -176,7 +190,7 @@
                                                 {% endfor %}
                                             {% else %}
                                                 <tr>
-                                                    <td colspan="6" class="text-center text-muted py-5">
+                                                    <td colspan="5" class="text-center text-muted py-5">
                                                         <i class="bi bi-inbox fs-1 d-block mb-2"></i>
                                                         No activity logs found.
                                                     </td>
