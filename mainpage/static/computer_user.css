@@ -205,32 +205,6 @@
     margin-bottom: 0;
 }
 
-/* Table Container - Make scrollable when content reaches 8 rows */
-.table-responsive {
-    max-height: 560px; /* Approximately 8 rows (70px per row) */
-    overflow-y: auto;
-    border-radius: 0 0 15px 15px;
-}
-
-/* Custom scrollbar for the table */
-.table-responsive::-webkit-scrollbar {
-    width: 8px;
-}
-
-.table-responsive::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 4px;
-}
-
-.table-responsive::-webkit-scrollbar-thumb {
-    background: linear-gradient(135deg, #ff914d 0%, #00bf63 100%);
-    border-radius: 4px;
-}
-
-.table-responsive::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(135deg, #e67a3d 0%, #00a854 100%);
-}
-
 .users-table thead th {
     background: #f8f9fa;
     border: none;
@@ -240,9 +214,6 @@
     font-size: 0.9rem;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    position: sticky;
-    top: 0;
-    z-index: 10;
 }
 
 .users-table tbody td {

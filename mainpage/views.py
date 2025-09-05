@@ -117,19 +117,57 @@ def computer_users(request):
         messages.error(request, 'Please log in to access this page.')
         return redirect('login')
     
-    # Get all users for display
-    users = ComputerUser.objects.all().order_by('-created_at')
+    # Get search query and filters from request
+    search_query = request.GET.get('search', '').strip()
+    access_level_filter = request.GET.get('access_level', '').strip()
+    status_filter = request.GET.get('status', '').strip()
     
-    # Pagination
-    paginator = Paginator(users, 10)  # Show 10 users per page
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
+    # Get all users for display
+    users_queryset = ComputerUser.objects.all().order_by('-created_at')
+    
+    # Apply search filter if search query exists
+    if search_query:
+        users_queryset = users_queryset.filter(
+            models.Q(first_name__icontains=search_query) |
+            models.Q(last_name__icontains=search_query) |
+            models.Q(student_id__icontains=search_query) |
+            models.Q(email__icontains=search_query) |
+            models.Q(course__icontains=search_query) |
+            models.Q(contact_number__icontains=search_query) |
+            models.Q(address__icontains=search_query) |
+            models.Q(access_level__icontains=search_query) |
+            models.Q(status__icontains=search_query) |
+            models.Q(computer_station__icontains=search_query)
+        )
+    
+    # Apply access level filter
+    if access_level_filter:
+        users_queryset = users_queryset.filter(access_level=access_level_filter)
+    
+    # Apply status filter
+    if status_filter:
+        users_queryset = users_queryset.filter(status=status_filter)
+    
+    # Convert to list to get all users (no pagination for now to show all students)
+    users = list(users_queryset)
+    
+    # Calculate statistics
+    total_users = len(users)
+    active_users = len([user for user in users if user.status == 'active'])
+    student_users = len([user for user in users if user.access_level == 'student'])
+    faculty_users = len([user for user in users if user.access_level == 'faculty'])
+    admin_users = len([user for user in users if user.access_level == 'admin'])
     
     context = {
-        'users': page_obj,
-        'total_users': users.count(),
-        'active_users': users.filter(status='active').count(),
-        'all_users': users,  # Add this for the template to use
+        'users': users,  # All users (filtered if search query exists)
+        'total_users': total_users,
+        'active_users': active_users,
+        'student_users': student_users,
+        'faculty_users': faculty_users,
+        'admin_users': admin_users,
+        'search_query': search_query,  # Pass search query to template
+        'access_level_filter': access_level_filter,  # Pass access level filter to template
+        'status_filter': status_filter,  # Pass status filter to template
         'current_page': 'computer_users',
         'admin_user_name': request.user.get_full_name() or request.user.username,
     }
@@ -479,19 +517,37 @@ def logs_view(request):
 @csrf_exempt
 @require_http_methods(["GET"])
 def get_users(request):
-    """Get all users or search users"""
-    search_query = request.GET.get('search', '')
+    """Get all users or search users - Enhanced search functionality"""
+    search_query = request.GET.get('search', '').strip()
+    access_level_filter = request.GET.get('access_level', '')
+    status_filter = request.GET.get('status', '')
     
+    # Start with all users
+    users = ComputerUser.objects.all()
+    
+    # Apply search filter if search query exists
     if search_query:
-        users = ComputerUser.objects.filter(
+        users = users.filter(
             models.Q(first_name__icontains=search_query) |
             models.Q(last_name__icontains=search_query) |
             models.Q(student_id__icontains=search_query) |
             models.Q(email__icontains=search_query) |
-            models.Q(course__icontains=search_query)
+            models.Q(course__icontains=search_query) |
+            models.Q(contact_number__icontains=search_query) |
+            models.Q(address__icontains=search_query) |
+            models.Q(computer_station__icontains=search_query)
         )
-    else:
-        users = ComputerUser.objects.all()
+    
+    # Apply access level filter
+    if access_level_filter:
+        users = users.filter(access_level=access_level_filter)
+    
+    # Apply status filter
+    if status_filter:
+        users = users.filter(status=status_filter)
+    
+    # Order by creation date (newest first)
+    users = users.order_by('-created_at')
     
     users_data = []
     for user in users:
@@ -507,13 +563,21 @@ def get_users(request):
             'address': user.address,
             'access_level': user.access_level,
             'status': user.status,
-            'computer_station': user.computer_station,
+            'computer_station': user.computer_station or 'Not Assigned',
             'last_login': user.last_login.isoformat() if user.last_login else None,
             'created_at': user.created_at.isoformat(),
             'updated_at': user.updated_at.isoformat(),
         })
     
-    return JsonResponse({'users': users_data, 'total': len(users_data)})
+    return JsonResponse({
+        'users': users_data, 
+        'total': len(users_data),
+        'search_query': search_query,
+        'filters': {
+            'access_level': access_level_filter,
+            'status': status_filter
+        }
+    })
 
 @csrf_exempt
 @require_http_methods(["POST"])

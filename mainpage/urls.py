@@ -23,6 +23,13 @@ urlpatterns = [
     path('admin/computer_units/edit/<int:unit_id>/', views.edit_computer_unit, name='edit_computer_unit'),
     path('admin/logs/', views.logs_view, name='logs'),
     
+    # API endpoints
+    path('api/users/', views.get_users, name='api_get_users'),
+    path('api/users/create/', views.create_user, name='api_create_user'),
+    path('api/users/<int:user_id>/update/', views.update_user, name='api_update_user'),
+    path('api/users/<int:user_id>/delete/', views.delete_user, name='api_delete_user'),
+    path('api/users/<int:user_id>/status/', views.update_user_status, name='api_update_user_status'),
+    
     # Student sign-in (public)
     path('', views.user_sign_in, name='user_sign_in'),
 ]

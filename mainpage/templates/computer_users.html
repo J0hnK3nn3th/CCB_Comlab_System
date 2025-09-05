@@ -48,6 +48,7 @@
                             </div>
                         </div>
 
+                     
                         <!-- Users Table Section -->
                         <div class="row">
                             <div class="col-12">
@@ -56,14 +57,38 @@
                                         <h5 class="card-title mb-0">
                                             <i class="bi bi-table me-2"></i>
                                             Current Users
+                                           
                                         </h5>
                                         <div class="table-actions">
-                                            <div class="input-group search-input-group">
-                                                <span class="input-group-text">
-                                                    <i class="bi bi-search"></i>
-                                                </span>
-                                                <input type="text" class="form-control" id="searchUsers" placeholder="Search users...">
-                                            </div>
+                                            <form method="GET" action="{% url 'computer_users' %}" class="d-flex flex-wrap gap-2">
+                                                <div class="input-group search-input-group">
+                                                    <span class="input-group-text">
+                                                        <i class="bi bi-search"></i>
+                                                    </span>
+                                                    <input type="text" class="form-control" id="searchUsers" name="search" placeholder="Search users..." value="{{ search_query }}">
+                                                    {% if search_query %}
+                                                    <button type="button" class="btn btn-outline-secondary" id="clearSearch" title="Clear search">
+                                                        <i class="bi bi-x"></i>
+                                                    </button>
+                                                    {% endif %}
+                                                </div>
+                                                <!-- <select name="access_level" class="form-select" style="width: auto;">
+                                                    <option value="">All Access Levels</option>
+                                                    <option value="student" {% if request.GET.access_level == 'student' %}selected{% endif %}>Students</option>
+                                                    <option value="faculty" {% if request.GET.access_level == 'faculty' %}selected{% endif %}>Faculty</option>
+                                                    <option value="admin" {% if request.GET.access_level == 'admin' %}selected{% endif %}>Administrators</option>
+                                                </select>
+                                                <select name="status" class="form-select" style="width: auto;">
+                                                    <option value="">All Statuses</option>
+                                                    <option value="active" {% if request.GET.status == 'active' %}selected{% endif %}>Active</option>
+                                                    <option value="inactive" {% if request.GET.status == 'inactive' %}selected{% endif %}>Inactive</option>
+                                                    <option value="suspended" {% if request.GET.status == 'suspended' %}selected{% endif %}>Suspended</option>
+                                                </select> -->
+                                                <!-- <button type="submit" class="btn btn-primary">
+                                                    <i class="bi bi-search me-1"></i>
+                                                    Search
+                                                </button> -->
+                                            </form>
                                             <button class="btn btn-outline-primary ms-2" id="exportUsers">
                                                 <i class="bi bi-download me-2"></i>
                                                 Export
@@ -71,9 +96,9 @@
                                         </div>
                                     </div>
                                     <div class="card-body">
-                                        <div class="table-responsive">
+                                        <div class="table-responsive" style="max-height: 540px; overflow-y: auto;">
                                             <table class="table table-hover users-table">
-                                                <thead>
+                                                <thead class="sticky-top bg-light">
                                                     <tr>
                                                         <th>User</th>
                                                         <th>Student ID</th>
@@ -119,6 +144,30 @@
                                                     {% endfor %}
                                                 </tbody>
                                             </table>
+                                            {% if not users and search_query or request.GET.access_level or request.GET.status %}
+                                            <div class="text-center py-4" id="noResultsMessage">
+                                                <i class="bi bi-search text-muted" style="font-size: 3rem;"></i>
+                                                <h5 class="text-muted mt-3">No users found</h5>
+                                                <p class="text-muted">
+                                                    No users match your search criteria
+                                                    {% if search_query %}"{{ search_query }}"{% endif %}
+                                                    {% if request.GET.access_level %} • {{ request.GET.access_level|title }}{% endif %}
+                                                    {% if request.GET.status %} • {{ request.GET.status|title }}{% endif %}
+                                                </p>
+                                                <a href="{% url 'computer_users' %}" class="btn btn-outline-primary">
+                                                    <i class="bi bi-arrow-left me-2"></i>Show All Users
+                                                </a>
+                                            </div>
+                                            {% elif not users %}
+                                            <div class="text-center py-4">
+                                                <i class="bi bi-people text-muted" style="font-size: 3rem;"></i>
+                                                <h5 class="text-muted mt-3">No users registered</h5>
+                                                <p class="text-muted">Start by adding your first user to the system</p>
+                                                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addUserModal">
+                                                    <i class="bi bi-person-plus me-2"></i>Add First User
+                                                </button>
+                                            </div>
+                                            {% endif %}
                                         </div>
                                     </div>
                                 </div>
@@ -427,20 +476,43 @@
                 }
             });
 
-            // Search functionality
+            // Search functionality - Real-time client-side filtering
             const searchInput = document.getElementById('searchUsers');
+            const clearSearchBtn = document.getElementById('clearSearch');
+            
+            // Real-time search filtering
             searchInput.addEventListener('input', function() {
                 const searchTerm = this.value.toLowerCase();
                 const tableRows = document.querySelectorAll('.users-table tbody tr');
+                let visibleCount = 0;
                 
                 tableRows.forEach(row => {
                     const text = row.textContent.toLowerCase();
                     if (text.includes(searchTerm)) {
                         row.style.display = '';
+                        visibleCount++;
                     } else {
                         row.style.display = 'none';
                     }
                 });
+                
+                // Update visible count (optional - you can add a counter element if needed)
+                console.log(`Showing ${visibleCount} of ${tableRows.length} users`);
+            });
+            
+            // Clear search functionality
+            if (clearSearchBtn) {
+                clearSearchBtn.addEventListener('click', function() {
+                    window.location.href = "{% url 'computer_users' %}";
+                });
+            }
+            
+            // Allow Enter key to submit search form
+            searchInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    this.closest('form').submit();
+                }
             });
             
             // Export functionality
